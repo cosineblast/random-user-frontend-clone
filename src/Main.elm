@@ -14,7 +14,6 @@ import Json.Decode exposing (Decoder, at)
 
 import Heroicons.Outline as Icons
 
-
 main = Browser.element { init = init, update = update, view = view, subscriptions = subscriptions }
 
 
@@ -153,8 +152,11 @@ viewUserCard model =
 
 view : Model -> Html Msg
 view model =
-    div [class "mt-14"]
+    div []
     [ div [class "h-96 absolute bg-zinc-800 w-full -z-10"] []
+    , nav [class "h-14 bg-zinc-900"] [
+
+        ]
     , header [class "flex justify-center pt-10 text-white pb-16"]
         [ div [class "flex flex-col items-center text-center"]
             [ p [class "text-5xl mb-5"] [text "RANDOM USER GENERATOR"]
