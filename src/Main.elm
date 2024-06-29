@@ -130,7 +130,7 @@ subscriptions _ = Sub.none
 
 viewUserCard : Model -> Html Msg
 viewUserCard model =
-    section [class "rounded-lg shadow-lg p-2 relative mx-5"]
+    section [class "rounded-lg shadow-lg p-2 relative mx-5 bg-white"]
         [ figure [class "absolute left-0 right-0 top-10 flex justify-center"]
             [ div [class "border-solid border-2 border-zinc-300 rounded-full p-1 bg-white"]
                 [ img [class "rounded-full w-40 h-40", src (mapDefault model.user (\it -> it.imageUrl) "")] []
@@ -153,8 +153,9 @@ viewUserCard model =
 
 view : Model -> Html Msg
 view model =
-    div []
-    [ header [class "flex justify-center pt-10 bg-zinc-800 text-white pb-10"]
+    div [class "mt-14"]
+    [ div [class "h-96 absolute bg-zinc-800 w-full -z-10"] []
+    , header [class "flex justify-center pt-10 text-white pb-16"]
         [ div [class "flex flex-col items-center text-center"]
             [ p [class "text-5xl mb-5"] [text "RANDOM USER GENERATOR"]
             , p [class "mb-2"]
@@ -163,7 +164,7 @@ view model =
             ]
         ]
 
-    , main_ [class "max-w-screen-md mx-auto pt-20"]
+    , main_ [class "max-w-screen-md mx-auto"]
         [
             viewUserCard model
         ]
