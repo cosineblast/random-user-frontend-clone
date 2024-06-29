@@ -7,9 +7,15 @@ import Html.Events exposing (..)
 import Browser
 import Maybe as M
 
+import Http
+import Json.Decode as Decode
+import Json.Decode as D
+import Json.Decode exposing (Decoder, at)
+
 import Heroicons.Outline as Icons
 
-main = Browser.sandbox { init = init, update = update, view = view }
+
+main = Browser.element { init = init, update = update, view = view, subscriptions = subscriptions }
 
 
 type alias User =
@@ -41,19 +47,61 @@ god = { name = "God"
         , imageUrl = "https://i.redd.it/ljfpcj6bdih41.jpg"
         }
 
-init : Model
-init =
-    { user = Just god
+
+
+withNoCmd x = (x, Cmd.none)
+
+
+parseUser : Decoder User
+parseUser =
+        Decode.at ["email"] D.string |> D.andThen (\email ->
+        Decode.at ["name", "first"] D.string |> D.andThen (\name ->
+        Decode.at ["dob", "date"] D.string |> D.andThen (\birthdate ->
+        Decode.at ["location", "street", "name"] D.string |> D.andThen (\street ->
+        Decode.at ["phone"] D.string |> D.andThen (\phone ->
+        Decode.at ["picture", "medium"] D.string |> D.map (\picture ->
+            { email = email
+            , name = name
+            , birthdate = birthdate
+            , address = street
+            , phoneNumber = phone
+            , imageUrl = picture
+            }
+            ))))))
+
+
+parseResponse : Decoder User
+parseResponse =
+    Decode.at ["results"]
+        (Decode.list parseUser
+            |> D.andThen (\it -> List.head it |> M.map D.succeed |> M.withDefault (D.fail "Empty user list") ))
+
+getUser : Cmd Msg
+getUser =
+    Http.get
+        { url = "https://randomuser.me/api/"
+        , expect = Http.expectJson RequestFinished parseResponse
+        }
+
+init : () -> (Model, Cmd Msg)
+init _ =
+    ( { user = Nothing
     , selectedOption = Name
-    }
+    }, getUser )
 
 type Msg = SwitchSelectedOption SelectedOption
+    | RequestFinished (Result Http.Error User)
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         SwitchSelectedOption option ->
-            { model | selectedOption = option }
+            { model | selectedOption = option } |> withNoCmd
+
+        RequestFinished request ->
+            case request of
+                Err error -> model |> withNoCmd -- TODO: add user indication that an error happened
+                Ok user -> { model | user = Just user } |> withNoCmd
 
 selectedOptionName : SelectedOption -> String
 selectedOptionName option =
@@ -76,6 +124,10 @@ getSelectedOption option user =
 mapDefault : Maybe a -> (a -> b) -> b -> b
 mapDefault thing f def = thing |> Maybe.map f |> Maybe.withDefault def
 
+subscriptions : Model -> Sub Msg
+subscriptions _ = Sub.none
+
+
 viewUserCard : Model -> Html Msg
 viewUserCard model =
     section [class "rounded-lg shadow-lg p-2 relative mx-5"]
@@ -88,7 +140,7 @@ viewUserCard model =
         , hr [] []
         , div [class "pt-28 flex flex-col items-center gap-2 pb-5"]
             [ p [class "text-zinc-500"] [ text ("Hi, my " ++ selectedOptionName model.selectedOption ++ " is") ]
-            , p [class "text-5xl"] [ text (model.user |> M.map (getSelectedOption model.selectedOption) |> M.withDefault "...") ]
+            , p [class "text-3xl"] [ text (model.user |> M.map (getSelectedOption model.selectedOption) |> M.withDefault "...") ]
             , div [class "flex flex-row gap-10 flex-wrap justify-center mt-3"]
                 [ p [class "w-10", onMouseEnter (SwitchSelectedOption Name)] [Icons.user []]
                 , p [class "w-10", onMouseEnter (SwitchSelectedOption Email)] [Icons.envelope []]
