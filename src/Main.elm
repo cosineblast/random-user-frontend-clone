@@ -34,19 +34,9 @@ type SelectedOption =
     | Phone
 
 type alias Model =
-    { user : Maybe User
+    { user : Maybe (Result () User)
     , selectedOption : SelectedOption
     }
-
-god = { name = "God"
-        , email = "god@god.com"
-        , birthdate = "09/12/2036"
-        , address = "your bones"
-        , phoneNumber = "424242424242"
-        , imageUrl = "https://i.redd.it/ljfpcj6bdih41.jpg"
-        }
-
-
 
 withNoCmd x = (x, Cmd.none)
 
@@ -99,8 +89,8 @@ update msg model =
 
         RequestFinished request ->
             case request of
-                Err error -> model |> withNoCmd -- TODO: add user indication that an error happened
-                Ok user -> { model | user = Just user } |> withNoCmd
+                Err error -> { model | user = Just (Err ()) } |> withNoCmd
+                Ok user -> { model | user = Just (Ok user) } |> withNoCmd
 
 selectedOptionName : SelectedOption -> String
 selectedOptionName option =
@@ -126,20 +116,33 @@ mapDefault thing f def = thing |> Maybe.map f |> Maybe.withDefault def
 subscriptions : Model -> Sub Msg
 subscriptions _ = Sub.none
 
+isErr : Result a b -> Bool
+isErr result =
+    case result of
+        Err _ -> True
+        Ok _ -> False
 
 viewUserCard : Model -> Html Msg
 viewUserCard model =
+    let isError = model.user |> M.map isErr |>  M.withDefault False
+        user = model.user |> M.andThen Result.toMaybe
+    in
     section [class "rounded-lg shadow-lg p-2 relative mx-5 bg-white"]
         [ figure [class "absolute left-0 right-0 top-10 flex justify-center"]
             [ div [class "border-solid border-2 border-zinc-300 rounded-full p-1 bg-white"]
-                [ img [class "rounded-full w-40 h-40", src (mapDefault model.user (\it -> it.imageUrl) "")] []
+                [ img [class "rounded-full w-40 h-40", src (mapDefault user (\it -> it.imageUrl) "")] []
                 ]
             ]
         , div [class "pt-20 pb-10"] []
         , hr [] []
-        , div [class "pt-28 flex flex-col items-center gap-2 pb-5"]
+        , if isError then
+            div [class "text-red-400 pt-28 flex justify-center pb-5"]
+            [ h1 [class "text-2xl text-center"] [ text "Something went wrong x-x" ]
+            ]
+            else
+            div [class "pt-28 flex flex-col items-center gap-2 pb-5"]
             [ p [class "text-zinc-500"] [ text ("Hi, my " ++ selectedOptionName model.selectedOption ++ " is") ]
-            , p [class "text-3xl"] [ text (model.user |> M.map (getSelectedOption model.selectedOption) |> M.withDefault "...") ]
+            , p [class "text-3xl"] [ text (user |> M.map (getSelectedOption model.selectedOption) |> M.withDefault "...") ]
             , div [class "flex flex-row gap-10 flex-wrap justify-center mt-3"]
                 [ p [class "w-10", onMouseEnter (SwitchSelectedOption Name)] [Icons.user []]
                 , p [class "w-10", onMouseEnter (SwitchSelectedOption Email)] [Icons.envelope []]
