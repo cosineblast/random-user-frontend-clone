@@ -18,7 +18,6 @@ type alias User =
     , birthdate : String
     , address : String
     , phoneNumber : String
-    , password : String
     , imageUrl : String
     }
 
@@ -28,7 +27,6 @@ type SelectedOption =
     | Birthdate
     | Address
     | Phone
-    | Password
 
 type alias Model =
     { user : Maybe User
@@ -40,7 +38,6 @@ god = { name = "God"
         , birthdate = "09/12/2036"
         , address = "your bones"
         , phoneNumber = "424242424242"
-        , password = "12345"
         , imageUrl = "https://i.redd.it/ljfpcj6bdih41.jpg"
         }
 
@@ -66,7 +63,6 @@ selectedOptionName option =
         Birthdate -> "birth date"
         Address -> "address"
         Phone -> "phone"
-        Password -> "password"
 
 getSelectedOption : SelectedOption -> User -> String
 getSelectedOption option user =
@@ -76,7 +72,6 @@ getSelectedOption option user =
         Birthdate -> user.birthdate
         Address -> user.address
         Phone -> user.phoneNumber
-        Password -> user.password
 
 mapDefault : Maybe a -> (a -> b) -> b -> b
 mapDefault thing f def = thing |> Maybe.map f |> Maybe.withDefault def
@@ -100,7 +95,6 @@ viewUserCard model =
                 , p [class "w-10", onMouseEnter (SwitchSelectedOption Birthdate)] [Icons.cake []]
                 , p [class "w-10", onMouseEnter (SwitchSelectedOption Address)] [Icons.mapPin []]
                 , p [class "w-10", onMouseEnter (SwitchSelectedOption Phone)] [Icons.phone []]
-                , p [class "w-10", onMouseEnter (SwitchSelectedOption Password)] [Icons.lockClosed []]
                 ]
             ]
         ]
