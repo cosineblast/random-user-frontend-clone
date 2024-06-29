@@ -5,6 +5,8 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Browser
 
+import Heroicons.Outline as Icons
+
 main =
     div []
     [ header [class "flex justify-center pt-10 bg-zinc-800 text-white pb-10"]
@@ -28,16 +30,14 @@ main =
             , div [class "pt-28 flex flex-col items-center gap-2 pb-5"]
                 [ p [class "text-zinc-500"] [ text "My name is" ]
                 , p [class "text-5xl"] [ text "God" ]
-                , div [class "flex flex-row gap-4 flex-wrap justify-center"]
-                    [ p [] [ text "Name"]
-                    , p [] [ text "E-mail"]
-                    , p [] [ text "Birthday"]
-                    , p [] [ text "Address"]
-                    , p [] [ text "Phone number"]
-                    , p [] [ text "Password"]
+                , div [class "flex flex-row gap-10 flex-wrap justify-center"]
+                    [ p [class "w-10"] [Icons.user []]
+                    , p [class "w-10"] [Icons.envelope []]
+                    , p [class "w-10"] [Icons.cake []]
+                    , p [class "w-10"] [Icons.mapPin []]
+                    , p [class "w-10"] [Icons.phone []]
+                    , p [class "w-10"] [Icons.lockClosed []]
                     ]
-
-
                 ]
             ]
         ]
